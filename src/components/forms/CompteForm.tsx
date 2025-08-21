@@ -17,10 +17,12 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
   const [formData, setFormData] = useState({
     nom: compte?.nom || '',
     type: compte?.type || 'banque' as const,
-    numeroCompte: compte?.numeroCompte || '',
+    numero: compte?.numero || '',
     banque: compte?.banque || '',
     soldeInitial: compte?.soldeInitial || 0,
-    statut: compte?.statut || 'actif' as const
+    devise: compte?.devise || 'CFA',
+    statut: compte?.statut || 'actif' as const,
+    description: compte?.description || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -59,7 +61,7 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="banque">Compte Bancaire</SelectItem>
-              <SelectItem value="caisse">Caisse</SelectItem>
+              <SelectItem value="especes">Caisse</SelectItem>
               <SelectItem value="mobile_money">Mobile Money</SelectItem>
             </SelectContent>
           </Select>
@@ -77,11 +79,11 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="numeroCompte">Numéro de compte</Label>
+              <Label htmlFor="numero">Numéro de compte</Label>
               <Input
-                id="numeroCompte"
-                value={formData.numeroCompte}
-                onChange={(e) => setFormData(prev => ({ ...prev, numeroCompte: e.target.value }))}
+                id="numero"
+                value={formData.numero}
+                onChange={(e) => setFormData(prev => ({ ...prev, numero: e.target.value }))}
                 placeholder="Numéro de compte bancaire"
               />
             </div>
@@ -90,11 +92,11 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
 
         {formData.type === 'mobile_money' && (
           <div>
-            <Label htmlFor="numeroCompte">Numéro de téléphone</Label>
+            <Label htmlFor="numero">Numéro de téléphone</Label>
             <Input
-              id="numeroCompte"
-              value={formData.numeroCompte}
-              onChange={(e) => setFormData(prev => ({ ...prev, numeroCompte: e.target.value }))}
+              id="numero"
+              value={formData.numero}
+              onChange={(e) => setFormData(prev => ({ ...prev, numero: e.target.value }))}
               placeholder="Ex: +228 XX XX XX XX"
             />
           </div>
@@ -113,6 +115,17 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
         </div>
 
         <div>
+          <Label htmlFor="devise">Devise</Label>
+          <Input
+            id="devise"
+            value={formData.devise}
+            onChange={(e) => setFormData(prev => ({ ...prev, devise: e.target.value }))}
+            placeholder="CFA"
+            required
+          />
+        </div>
+
+        <div>
           <Label htmlFor="statut">Statut</Label>
           <Select value={formData.statut} onValueChange={(value: any) => 
             setFormData(prev => ({ ...prev, statut: value }))
@@ -123,7 +136,7 @@ export const CompteForm = ({ compte, onSubmit, onCancel }: CompteFormProps) => {
             <SelectContent>
               <SelectItem value="actif">Actif</SelectItem>
               <SelectItem value="inactif">Inactif</SelectItem>
-              <SelectItem value="clos">Clos</SelectItem>
+              <SelectItem value="ferme">Fermé</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -29,9 +29,8 @@ export const TransactionForm = ({
     type: transaction?.type || 'recette' as const,
     montant: transaction?.montant || 0,
     categorieId: transaction?.categorieId || '',
-    sousCategorieId: transaction?.sousCategorieId || '',
     module: transaction?.module || 'autre' as const,
-    referenceId: transaction?.referenceId || '',
+    reference: transaction?.reference || '',
     description: transaction?.description || '',
     modePaiement: transaction?.modePaiement || 'especes' as const,
     numeroTransaction: transaction?.numeroTransaction || '',
@@ -42,7 +41,6 @@ export const TransactionForm = ({
   });
 
   const categoriesFiltrees = categories.filter(c => c.type === formData.type);
-  const categorieSelectionnee = categories.find(c => c.id === formData.categorieId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +62,7 @@ export const TransactionForm = ({
           <div>
             <Label htmlFor="type">Type de transaction</Label>
             <Select value={formData.type} onValueChange={(value: 'recette' | 'depense') => 
-              setFormData(prev => ({ ...prev, type: value, categorieId: '', sousCategorieId: '' }))
+              setFormData(prev => ({ ...prev, type: value, categorieId: '' }))
             }>
               <SelectTrigger>
                 <SelectValue />
@@ -121,7 +119,7 @@ export const TransactionForm = ({
           <div>
             <Label htmlFor="categorieId">Catégorie</Label>
             <Select value={formData.categorieId} onValueChange={(value) => 
-              setFormData(prev => ({ ...prev, categorieId: value, sousCategorieId: '' }))
+              setFormData(prev => ({ ...prev, categorieId: value }))
             }>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner une catégorie" />

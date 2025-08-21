@@ -15,6 +15,7 @@ export interface TransactionComptableComplete {
   numeroTransaction?: string;
   statut: 'validee' | 'en_attente' | 'annulee';
   pieceJustificative?: string;
+  tiers?: string; // Nom du client/fournisseur
   remarques?: string;
 }
 
@@ -22,7 +23,7 @@ export interface Compte {
   id: string;
   nom: string;
   type: 'banque' | 'especes' | 'mobile_money' | 'autre';
-  numero?: string;
+  numero?: string; // Numéro de compte ou téléphone
   banque?: string;
   soldeInitial: number;
   soldeActuel: number;
