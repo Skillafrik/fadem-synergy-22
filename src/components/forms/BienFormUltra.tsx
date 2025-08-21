@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Home, MapPin, Camera, Plus, Save, X, Building } from 'lucide-react';
 import { UltraCard } from '@/components/ui/ultra-card';
@@ -5,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useImmobilierUltra } from '@/hooks/useImmobilierUltra';
-import { Chambre } from '@/types/immobilier-unifie';
 
 interface BienFormUltraProps {
   onClose: () => void;
@@ -13,7 +13,8 @@ interface BienFormUltraProps {
 }
 
 export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
-  const { proprietaires, ajouterBien } = useImmobilierUltra();
+  const { ajouterBien, proprietaires } = useImmobilierUltra();
+  
   const [formData, setFormData] = useState({
     proprietaireId: '',
     type: 'appartement' as 'appartement' | 'maison' | 'studio' | 'bureau' | 'commerce',
@@ -27,52 +28,48 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     prixFadem: 0,
     description: '',
     equipements: [] as string[],
-    coordonnees: { latitude: 4.0511, longitude: 9.7679 } // Douala par défaut
+    photos: {
+      facade: [] as string[],
+      chambres: {} as Record<string, string[]>,
+      communs: [] as string[]
+    }
   });
 
-  const [chambres, setChambres] = useState<Omit<Chambre, 'statut' | 'niveau'>[]>([
+  const [chambres, setChambres] = useState([
     {
-      numero: '01',
-      superficie: 12,
-      prix: 35000,
-      equipements: [],
-      photos: [],
+      numero: '1',
+      superficie: 20,
+      prix: 50000,
+      equipements: [] as string[],
+      photos: [] as string[],
+      statut: 'libre' as 'libre' | 'occupee' | 'maintenance' | 'reservee',
+      niveau: 1,
       description: ''
     }
   ]);
 
   const [loading, setLoading] = useState(false);
-  const [equipementInput, setEquipementInput] = useState('');
 
-  const equipementsCommuns = [
-    'Climatisation', 'Ventilateur', 'Eau courante', 'Électricité', 
-    'Internet', 'Parking', 'Sécurité', 'Jardin', 'Balcon', 'Cuisine équipée'
+  const equipementsDisponibles = [
+    'Climatisation', 'Ventilateur', 'Réfrigérateur', 'Télévision',
+    'WiFi', 'Eau courante', 'Électricité', 'Sécurité 24h/24',
+    'Parking', 'Jardin', 'Balcon', 'Cuisine équipée'
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.proprietaireId) return;
-
     setLoading(true);
 
     try {
-      const chambresComplete = chambres.map((chambre, index) => ({
-        ...chambre,
-        statut: 'libre' as const,
-        niveau: Math.floor(index / 4) + 1 // 4 chambres par étage max
-      }));
-
-      await ajouterBien({
+      const bienData = {
         ...formData,
-        nbrChambres: chambres.length,
-        chambres: chambresComplete,
-        photos: {
-          facade: [],
-          chambres: {},
-          communs: []
-        }
-      });
+        chambres: chambres.map(chambre => ({
+          ...chambre,
+          dateOccupation: chambre.statut === 'occupee' ? new Date() : undefined
+        }))
+      };
 
+      await ajouterBien(bienData);
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -82,33 +79,38 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     }
   };
 
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const ajouterChambre = () => {
-    setChambres(prev => [
-      ...prev,
-      {
-        numero: String(prev.length + 1).padStart(2, '0'),
-        superficie: 12,
-        prix: 35000,
-        equipements: [],
-        photos: [],
-        description: ''
-      }
-    ]);
+    const nouvelleChambre = {
+      numero: (chambres.length + 1).toString(),
+      superficie: 20,
+      prix: 50000,
+      equipements: [],
+      photos: [],
+      statut: 'libre' as const,
+      niveau: 1,
+      description: ''
+    };
+    setChambres(prev => [...prev, nouvelleChambre]);
+    setFormData(prev => ({ ...prev, nbrChambres: chambres.length + 1 }));
   };
 
   const supprimerChambre = (index: number) => {
     if (chambres.length > 1) {
       setChambres(prev => prev.filter((_, i) => i !== index));
+      setFormData(prev => ({ ...prev, nbrChambres: chambres.length - 1 }));
     }
   };
 
-  const modifierChambre = (index: number, field: keyof Omit<Chambre, 'statut' | 'niveau'>, value: any) => {
+  const modifierChambre = (index: number, field: string, value: string) => {
     setChambres(prev => prev.map((chambre, i) => {
       if (i === index) {
-        // Handle type conversion for numeric fields
-        if (field === 'superficie' || field === 'prix') {
-          const numericValue = typeof value === 'string' ? (Number(value) || 0) : value;
-          return { ...chambre, [field]: numericValue };
+        // Gestion spéciale pour les champs numériques
+        if (field === 'superficie' || field === 'prix' || field === 'niveau') {
+          return { ...chambre, [field]: Number(value) || 0 };
         }
         return { ...chambre, [field]: value };
       }
@@ -116,19 +118,32 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     }));
   };
 
-  const ajouterEquipement = () => {
-    if (equipementInput.trim() && !formData.equipements.includes(equipementInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        equipements: [...prev.equipements, equipementInput.trim()]
-      }));
-      setEquipementInput('');
-    }
+  const toggleEquipement = (equipement: string) => {
+    setFormData(prev => ({
+      ...prev,
+      equipements: prev.equipements.includes(equipement)
+        ? prev.equipements.filter(e => e !== equipement)
+        : [...prev.equipements, equipement]
+    }));
+  };
+
+  const toggleEquipementChambre = (chambreIndex: number, equipement: string) => {
+    setChambres(prev => prev.map((chambre, i) => {
+      if (i === chambreIndex) {
+        return {
+          ...chambre,
+          equipements: chambre.equipements.includes(equipement)
+            ? chambre.equipements.filter(e => e !== equipement)
+            : [...chambre.equipements, equipement]
+        };
+      }
+      return chambre;
+    }));
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <UltraCard className="w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+      <UltraCard className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Building className="w-6 h-6 text-primary" />
@@ -139,220 +154,228 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sélection du propriétaire */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Propriétaire *</label>
-            <select
-              required
-              value={formData.proprietaireId}
-              onChange={(e) => setFormData(prev => ({ ...prev, proprietaireId: e.target.value }))}
-              className="w-full p-3 border rounded-lg bg-background"
-            >
-              <option value="">Sélectionner un propriétaire</option>
-              {proprietaires.map(prop => (
-                <option key={prop.id} value={prop.id}>
-                  {prop.nom} {prop.prenom} - {prop.telephone}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Informations de base */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Type de bien *</label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                className="w-full p-3 border rounded-lg bg-background"
-              >
-                <option value="appartement">Appartement</option>
-                <option value="maison">Maison</option>
-                <option value="studio">Studio</option>
-                <option value="bureau">Bureau</option>
-                <option value="commerce">Commerce</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Nom du bien</label>
-              <Input
-                value={formData.nom}
-                onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
-                placeholder="Ex: Résidence Belle Vue"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Prix FADEM (CFA)</label>
-              <Input
-                type="number"
-                value={formData.prixFadem}
-                onChange={(e) => setFormData(prev => ({ ...prev, prixFadem: Number(e.target.value) }))}
-                placeholder="Prix d'achat/estimation"
-              />
-            </div>
-          </div>
-
-          {/* Localisation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                Adresse complète *
-              </label>
-              <Input
-                required
-                value={formData.adresse}
-                onChange={(e) => setFormData(prev => ({ ...prev, adresse: e.target.value }))}
-                placeholder="Adresse précise du bien"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Quartier *</label>
-              <Input
-                required
-                value={formData.quartier}
-                onChange={(e) => setFormData(prev => ({ ...prev, quartier: e.target.value }))}
-                placeholder="Nom du quartier"
-              />
-            </div>
-          </div>
-
-          {/* Caractéristiques */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
-              <Input
-                type="number"
-                value={formData.superficie}
-                onChange={(e) => setFormData(prev => ({ ...prev, superficie: Number(e.target.value) }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Nombre d'étages</label>
-              <Input
-                type="number"
-                min="1"
-                value={formData.etages}
-                onChange={(e) => setFormData(prev => ({ ...prev, etages: Number(e.target.value) }))}
-              />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-2">Ville</label>
-              <Input
-                value={formData.ville}
-                onChange={(e) => setFormData(prev => ({ ...prev, ville: e.target.value }))}
-              />
-            </div>
-          </div>
-
-          {/* Équipements */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Équipements du bien</label>
-            <div className="flex gap-2 mb-3">
-              <Input
-                value={equipementInput}
-                onChange={(e) => setEquipementInput(e.target.value)}
-                placeholder="Ajouter un équipement"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), ajouterEquipement())}
-              />
-              <Button type="button" onClick={ajouterEquipement} size="sm">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Informations générales */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Home className="w-5 h-5" />
+              Informations générales
+            </h3>
             
-            <div className="flex flex-wrap gap-2 mb-3">
-              {equipementsCommuns.map(equip => (
-                <Badge
-                  key={equip}
-                  variant={formData.equipements.includes(equip) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (formData.equipements.includes(equip)) {
-                      setFormData(prev => ({
-                        ...prev,
-                        equipements: prev.equipements.filter(e => e !== equip)
-                      }));
-                    } else {
-                      setFormData(prev => ({
-                        ...prev,
-                        equipements: [...prev.equipements, equip]
-                      }));
-                    }
-                  }}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Propriétaire *</label>
+                <select
+                  required
+                  value={formData.proprietaireId}
+                  onChange={(e) => handleInputChange('proprietaireId', e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
                 >
-                  {equip}
+                  <option value="">Sélectionner un propriétaire</option>
+                  {proprietaires.map((prop) => (
+                    <option key={prop.id} value={prop.id}>
+                      {prop.nom} {prop.prenom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Type de bien *</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange('type', e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="appartement">Appartement</option>
+                  <option value="maison">Maison</option>
+                  <option value="studio">Studio</option>
+                  <option value="bureau">Bureau</option>
+                  <option value="commerce">Commerce</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Nom du bien</label>
+                <Input
+                  value={formData.nom}
+                  onChange={(e) => handleInputChange('nom', e.target.value)}
+                  placeholder="Ex: Résidence Étoile"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Quartier *</label>
+                <Input
+                  required
+                  value={formData.quartier}
+                  onChange={(e) => handleInputChange('quartier', e.target.value)}
+                  placeholder="Ex: Bonanjo, Akwa..."
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  Adresse complète *
+                </label>
+                <Input
+                  required
+                  value={formData.adresse}
+                  onChange={(e) => handleInputChange('adresse', e.target.value)}
+                  placeholder="Adresse complète du bien"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Superficie totale (m²)</label>
+                <Input
+                  type="number"
+                  value={formData.superficie}
+                  onChange={(e) => handleInputChange('superficie', Number(e.target.value))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre d'étages</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={formData.etages}
+                  onChange={(e) => handleInputChange('etages', Number(e.target.value))}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">Prix FADEM (commission)</label>
+                <Input
+                  type="number"
+                  value={formData.prixFadem}
+                  onChange={(e) => handleInputChange('prixFadem', Number(e.target.value))}
+                  placeholder="Commission FADEM en CFA"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Équipements généraux */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Équipements généraux</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {equipementsDisponibles.map((equipement) => (
+                <Badge
+                  key={equipement}
+                  variant={formData.equipements.includes(equipement) ? "default" : "outline"}
+                  className="cursor-pointer justify-center py-2"
+                  onClick={() => toggleEquipement(equipement)}
+                >
+                  {equipement}
                 </Badge>
               ))}
             </div>
-
-            {formData.equipements.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {formData.equipements.map(equip => (
-                  <Badge key={equip} variant="secondary" className="text-xs">
-                    {equip}
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Configuration des chambres */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Configuration des chambres</h3>
+          {/* Gestion des chambres */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Chambres ({chambres.length})</h3>
               <Button type="button" onClick={ajouterChambre} size="sm">
                 <Plus className="w-4 h-4 mr-2" />
-                Ajouter chambre
+                Ajouter une chambre
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid gap-4">
               {chambres.map((chambre, index) => (
-                <div key={index} className="p-4 border rounded-lg bg-muted/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium">Chambre {chambre.numero}</h4>
-                    {chambres.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => supprimerChambre(index)}
+                <UltraCard key={index} variant="glass" className="relative">
+                  {chambres.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                      onClick={() => supprimerChambre(index)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Chambre {chambre.numero}</h4>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Numéro</label>
+                        <Input
+                          value={chambre.numero}
+                          onChange={(e) => modifierChambre(index, 'numero', e.target.value)}
+                          size="sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Superficie (m²)</label>
+                        <Input
+                          type="number"
+                          value={chambre.superficie.toString()}
+                          onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
+                          size="sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Loyer (CFA)</label>
+                        <Input
+                          type="number"
+                          value={chambre.prix.toString()}
+                          onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
+                          size="sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Niveau</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={chambre.niveau.toString()}
+                          onChange={(e) => modifierChambre(index, 'niveau', e.target.value)}
+                          size="sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium mb-2">Statut</label>
+                      <select
+                        value={chambre.statut}
+                        onChange={(e) => modifierChambre(index, 'statut', e.target.value)}
+                        className="w-full p-2 text-sm border rounded bg-background"
                       >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Numéro</label>
-                      <Input
-                        value={chambre.numero}
-                        onChange={(e) => modifierChambre(index, 'numero', e.target.value)}
-                        size="sm"
-                      />
+                        <option value="libre">Libre</option>
+                        <option value="occupee">Occupée</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="reservee">Réservée</option>
+                      </select>
                     </div>
+
                     <div>
-                      <label className="block text-xs font-medium mb-1">Superficie (m²)</label>
-                      <Input
-                        type="number"
-                        value={chambre.superficie.toString()}
-                        onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
-                        size="sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Loyer (CFA)</label>
-                      <Input
-                        type="number"
-                        value={chambre.prix.toString()}
-                        onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
-                        size="sm"
-                      />
+                      <label className="block text-xs font-medium mb-2">Équipements spécifiques</label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
+                        {equipementsDisponibles.slice(0, 8).map((equipement) => (
+                          <Badge
+                            key={equipement}
+                            variant={chambre.equipements.includes(equipement) ? "default" : "outline"}
+                            className="cursor-pointer justify-center text-xs py-1"
+                            onClick={() => toggleEquipementChambre(index, equipement)}
+                          >
+                            {equipement}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                </UltraCard>
               ))}
             </div>
           </div>
@@ -362,9 +385,9 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
             <label className="block text-sm font-medium mb-2">Description</label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Description détaillée du bien..."
-              rows={3}
+              rows={4}
               className="w-full p-3 border rounded-lg bg-background resize-none"
             />
           </div>
