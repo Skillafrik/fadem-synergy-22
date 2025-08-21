@@ -419,4 +419,3 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     </div>
   );
 };
-
