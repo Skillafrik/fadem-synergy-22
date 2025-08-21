@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -228,7 +229,6 @@ export default function ComptabiliteComplete() {
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
-          {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-4">
               <div className="flex items-center justify-between">
@@ -276,10 +276,9 @@ export default function ComptabiliteComplete() {
                 </div>
                 <PiggyBank className="w-8 h-8 text-blue-600" />
               </div>
-            </div>
+            </Card>
           </div>
 
-          {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="p-4">
               <h3 className="text-lg font-semibold mb-4">Actions rapides</h3>
@@ -327,7 +326,6 @@ export default function ComptabiliteComplete() {
             </Card>
           </div>
 
-          {/* Recent Transactions */}
           <Card className="p-4">
             <h3 className="text-lg font-semibold mb-4">Transactions récentes</h3>
             <div className="space-y-2">
@@ -370,7 +368,6 @@ export default function ComptabiliteComplete() {
             </Button>
           </div>
 
-          {/* Filters */}
           <div className="flex gap-4 items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -395,7 +392,6 @@ export default function ComptabiliteComplete() {
             </select>
           </div>
 
-          {/* Transactions List */}
           <div className="space-y-2">
             {filteredTransactions.map((transaction) => (
               <Card key={transaction.id} className="p-4">
@@ -463,7 +459,6 @@ export default function ComptabiliteComplete() {
             </Button>
           </div>
 
-          {/* Comptes List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {comptes.map((compte) => (
               <Card key={compte.id} className="p-4">
@@ -523,7 +518,6 @@ export default function ComptabiliteComplete() {
         <TabsContent value="rapports" className="space-y-4">
           <h2 className="text-xl font-semibold">Rapports et Analyses</h2>
           
-          {/* Bilans par compte */}
           <Card className="p-4">
             <h3 className="text-lg font-semibold mb-4">Bilan par compte (mois actuel)</h3>
             <div className="space-y-3">
