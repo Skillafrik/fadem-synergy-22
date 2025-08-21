@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Home, MapPin, Camera, Plus, Save, X, Building } from 'lucide-react';
 import { UltraCard } from '@/components/ui/ultra-card';
@@ -319,7 +318,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <Input
                           type="number"
                           value={chambre.superficie.toString()}
-                          onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
+                          onChange={(e) => modifierChambre(index, 'superficie', Number(e.target.value) || 0)}
                           size="sm"
                         />
                       </div>
@@ -329,7 +328,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <Input
                           type="number"
                           value={chambre.prix.toString()}
-                          onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
+                          onChange={(e) => modifierChambre(index, 'prix', Number(e.target.value) || 0)}
                           size="sm"
                         />
                       </div>
@@ -340,7 +339,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                           type="number"
                           min="1"
                           value={chambre.niveau.toString()}
-                          onChange={(e) => modifierChambre(index, 'niveau', e.target.value)}
+                          onChange={(e) => modifierChambre(index, 'niveau', Number(e.target.value) || 1)}
                           size="sm"
                         />
                       </div>
