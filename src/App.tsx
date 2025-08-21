@@ -5,8 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { NotificationProvider } from "@/components/ui/notification-system";
 import Dashboard from "./pages/Dashboard";
 import Immobilier from "./pages/Immobilier";
+import ImmobilierUltra from "./pages/ImmobilierUltra";
 import BTP from "./pages/BTP";
 import Vehicules from "./pages/Vehicules";
 import Personnel from "./pages/Personnel";
@@ -20,24 +22,27 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/immobilier" element={<Immobilier />} />
-            <Route path="/btp" element={<BTP />} />
-            <Route path="/vehicules" element={<Vehicules />} />
-            <Route path="/personnel" element={<Personnel />} />
-            <Route path="/comptabilite" element={<ComptabiliteComplete />} />
-            <Route path="/rapports" element={<Rapports />} />
-            <Route path="/parametres" element={<Parametres />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <NotificationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/immobilier" element={<ImmobilierUltra />} />
+              <Route path="/immobilier-classic" element={<Immobilier />} />
+              <Route path="/btp" element={<BTP />} />
+              <Route path="/vehicules" element={<Vehicules />} />
+              <Route path="/personnel" element={<Personnel />} />
+              <Route path="/comptabilite" element={<ComptabiliteComplete />} />
+              <Route path="/rapports" element={<Rapports />} />
+              <Route path="/parametres" element={<Parametres />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </NotificationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
