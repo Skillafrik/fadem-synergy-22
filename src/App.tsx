@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +10,7 @@ import Immobilier from "./pages/Immobilier";
 import BTP from "./pages/BTP";
 import Vehicules from "./pages/Vehicules";
 import Personnel from "./pages/Personnel";
-import Comptabilite from "./pages/Comptabilite";
+import ComptabiliteComplete from "./pages/ComptabiliteComplete";
 import Rapports from "./pages/Rapports";
 import Parametres from "./pages/Parametres";
 import NotFound from "./pages/NotFound";
@@ -29,7 +30,7 @@ const App = () => (
             <Route path="/btp" element={<BTP />} />
             <Route path="/vehicules" element={<Vehicules />} />
             <Route path="/personnel" element={<Personnel />} />
-            <Route path="/comptabilite" element={<Comptabilite />} />
+            <Route path="/comptabilite" element={<ComptabiliteComplete />} />
             <Route path="/rapports" element={<Rapports />} />
             <Route path="/parametres" element={<Parametres />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
