@@ -232,7 +232,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                 <label className="block text-sm font-medium mb-2">Superficie totale (m²)</label>
                 <Input
                   type="number"
-                  value={formData.superficie}
+                  value={formData.superficie.toString()}
                   onChange={(e) => handleInputChange('superficie', Number(e.target.value))}
                 />
               </div>
@@ -242,7 +242,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                 <Input
                   type="number"
                   min="1"
-                  value={formData.etages}
+                  value={formData.etages.toString()}
                   onChange={(e) => handleInputChange('etages', Number(e.target.value))}
                 />
               </div>
@@ -251,7 +251,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                 <label className="block text-sm font-medium mb-2">Prix FADEM (commission)</label>
                 <Input
                   type="number"
-                  value={formData.prixFadem}
+                  value={formData.prixFadem.toString()}
                   onChange={(e) => handleInputChange('prixFadem', Number(e.target.value))}
                   placeholder="Commission FADEM en CFA"
                 />
