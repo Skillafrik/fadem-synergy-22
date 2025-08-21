@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useFademStorage } from './useLocalStorage';
 import { Vehicule, ProprietaireVehicule, ContratVehicule, HistoriqueLocation } from '@/types';
@@ -24,7 +25,9 @@ export const useVehicules = () => {
     const nouveauVehicule: Vehicule = {
       ...vehicule,
       id: `VEH-${Date.now()}`,
-      dateEnregistrement: new Date()
+      dateEnregistrement: new Date(),
+      contratsLocation: [],
+      historiqueLocation: []
     };
     
     setData(prev => ({
@@ -50,11 +53,13 @@ export const useVehicules = () => {
   };
 
   // Propriétaires Management
-  const ajouterProprietaire = (proprietaire: Omit<ProprietaireVehicule, 'id' | 'dateCreation'>) => {
+  const ajouterProprietaire = (proprietaire: Omit<ProprietaireVehicule, 'id' | 'dateCreation' | 'vehiculesConfies' | 'commissionsRecues'>) => {
     const nouveauProprietaire: ProprietaireVehicule = {
       ...proprietaire,
-      id: `PROP-${Date.now()}`,
-      dateCreation: new Date()
+      id: `PROP-VEH-${Date.now()}`,
+      dateCreation: new Date(),
+      vehiculesConfies: [],
+      commissionsRecues: 0
     };
     
     setData(prev => ({
@@ -63,22 +68,64 @@ export const useVehicules = () => {
     }));
   };
 
+  const modifierProprietaire = (id: string, modifications: Partial<ProprietaireVehicule>) => {
+    setData(prev => ({
+      ...prev,
+      proprietaires: prev.proprietaires.map(proprietaire =>
+        proprietaire.id === id ? { ...proprietaire, ...modifications } : proprietaire
+      )
+    }));
+  };
+
+  const supprimerProprietaire = (id: string) => {
+    // Vérifier qu'aucun véhicule n'est associé
+    const vehiculesAssocies = data.vehicules.filter(v => v.proprietaireVehiculeId === id);
+    if (vehiculesAssocies.length > 0) {
+      throw new Error('Impossible de supprimer: des véhicules sont associés à ce propriétaire');
+    }
+
+    setData(prev => ({
+      ...prev,
+      proprietaires: prev.proprietaires.filter(proprietaire => proprietaire.id !== id)
+    }));
+  };
+
   // Contrats Management
-  const creerContrat = (contrat: Omit<ContratVehicule, 'id'>) => {
+  const creerContrat = (contrat: Omit<ContratVehicule, 'id' | 'paiements'>) => {
     const nouveauContrat: ContratVehicule = {
       ...contrat,
-      id: `CONT-${Date.now()}`
+      id: `CONT-VEH-${Date.now()}`,
+      paiements: []
     };
     
     setData(prev => ({
       ...prev,
       contrats: [...prev.contrats, nouveauContrat]
     }));
+
+    // Ajouter le contrat à la liste des contrats du véhicule
+    setData(prev => ({
+      ...prev,
+      vehicules: prev.vehicules.map(v =>
+        v.id === contrat.vehiculeId 
+          ? { ...v, contratsLocation: [...v.contratsLocation, nouveauContrat.id] }
+          : v
+      )
+    }));
+  };
+
+  const modifierContrat = (id: string, modifications: Partial<ContratVehicule>) => {
+    setData(prev => ({
+      ...prev,
+      contrats: prev.contrats.map(contrat =>
+        contrat.id === id ? { ...contrat, ...modifications } : contrat
+      )
+    }));
   };
 
   const terminerLocation = (contratId: string) => {
     const contrat = data.contrats.find(c => c.id === contratId);
-    if (contrat && contrat.type === 'location') {
+    if (contrat && contrat.type === 'location' && contrat.statut === 'actif') {
       // Mettre à jour le contrat
       setData(prev => ({
         ...prev,
@@ -98,14 +145,15 @@ export const useVehicules = () => {
 
       setData(prev => ({
         ...prev,
-        historique: [...prev.historique, nouvelHistorique]
-      }));
-
-      // Mettre le véhicule disponible
-      setData(prev => ({
-        ...prev,
+        historique: [...prev.historique, nouvelHistorique],
         vehicules: prev.vehicules.map(v =>
-          v.id === contrat.vehiculeId ? { ...v, statut: 'disponible' } : v
+          v.id === contrat.vehiculeId 
+            ? { 
+                ...v, 
+                statut: 'disponible',
+                historiqueLocation: [...v.historiqueLocation, nouvelHistorique]
+              }
+            : v
         )
       }));
     }
@@ -147,13 +195,22 @@ export const useVehicules = () => {
     contrats: data.contrats,
     historique: data.historique,
     
-    // Methods
+    // Véhicules methods
     ajouterVehicule,
     modifierVehicule,
     supprimerVehicule,
+    
+    // Propriétaires methods
     ajouterProprietaire,
+    modifierProprietaire,
+    supprimerProprietaire,
+    
+    // Contrats methods
     creerContrat,
+    modifierContrat,
     terminerLocation,
+    
+    // Analytics
     obtenirStatistiques,
     obtenirVehiculesDisponibles,
     obtenirContratsActifs,
