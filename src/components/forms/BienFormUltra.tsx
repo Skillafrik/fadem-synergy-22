@@ -331,7 +331,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                       <Input
                         type="number"
                         value={chambre.superficie}
-                        onChange={(e) => modifierChambre(index, 'superficie', Number(e.target.value))}
+                        onChange={(e) => modifierChambre(index, 'superficie', Number(e.target.value) || 0)}
                         size="sm"
                       />
                     </div>
@@ -340,7 +340,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                       <Input
                         type="number"
                         value={chambre.prix}
-                        onChange={(e) => modifierChambre(index, 'prix', Number(e.target.value))}
+                        onChange={(e) => modifierChambre(index, 'prix', Number(e.target.value) || 0)}
                         size="sm"
                       />
                     </div>
