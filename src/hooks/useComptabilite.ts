@@ -170,6 +170,60 @@ export const useComptabilite = () => {
     };
   };
 
+  const obtenirStatistiquesJour = () => {
+    const aujourd = new Date();
+    
+    const transactionsJour = data.transactions.filter(t => {
+      const date = new Date(t.date);
+      return date.toDateString() === aujourd.toDateString();
+    });
+
+    const revenus = transactionsJour
+      .filter(t => t.type === 'recette')
+      .reduce((total, t) => total + t.montant, 0);
+
+    const depenses = transactionsJour
+      .filter(t => t.type === 'depense')
+      .reduce((total, t) => total + t.montant, 0);
+
+    const benefices = revenus - depenses;
+
+    return {
+      revenus,
+      depenses,
+      benefices,
+      nombreTransactions: transactionsJour.length
+    };
+  };
+
+  const obtenirStatistiquesMois = () => {
+    const maintenant = new Date();
+    const moisActuel = maintenant.getMonth();
+    const anneeActuelle = maintenant.getFullYear();
+    
+    const transactionsMois = data.transactions.filter(t => {
+      const date = new Date(t.date);
+      return date.getMonth() === moisActuel && date.getFullYear() === anneeActuelle;
+    });
+
+    const revenus = transactionsMois
+      .filter(t => t.type === 'recette')
+      .reduce((total, t) => total + t.montant, 0);
+
+    const depenses = transactionsMois
+      .filter(t => t.type === 'depense')
+      .reduce((total, t) => total + t.montant, 0);
+
+    const benefices = revenus - depenses;
+
+    return {
+      revenus,
+      depenses,
+      benefices,
+      nombreTransactions: transactionsMois.length
+    };
+  };
+
   const obtenirRevenusParSecteur = () => {
     const moisActuel = new Date().getMonth();
     const anneeActuelle = new Date().getFullYear();
@@ -230,6 +284,8 @@ export const useComptabilite = () => {
     supprimerTransaction,
     genererBilanMensuel,
     obtenirStatistiques,
+    obtenirStatistiquesJour,
+    obtenirStatistiquesMois,
     obtenirRevenusParSecteur,
     obtenirDepensesParCategorie,
     

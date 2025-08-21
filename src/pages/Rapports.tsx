@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { BarChart3, FileText, Download, Calendar, Filter, Plus, TrendingUp, DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";

@@ -374,17 +374,14 @@ export interface RapportJournalier {
 
 export interface RapportPersonnalise {
   id: string;
-  nom: string;
-  description?: string;
+  titre: string;
   dateDebut: Date;
   dateFin: Date;
   modules: string[];
   metriques: string[];
-  filtres?: Record<string, any>;
-  donnees?: Record<string, any>;
+  description?: string;
+  donnees: Record<string, any>;
   dateGeneration: Date;
-  generePar?: string;
-  format: 'pdf' | 'excel' | 'json';
 }
 
 // Types généraux
