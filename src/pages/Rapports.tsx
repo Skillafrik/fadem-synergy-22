@@ -101,7 +101,8 @@ const Rapports = () => {
         dateFin: finMois,
         modules: [],
         metriques: ['revenus', 'depenses', 'benefices', 'evolution'],
-        description: 'Rapport automatique mensuel'
+        description: 'Rapport automatique mensuel',
+        donnees: {} // This will be calculated by the hook
       });
 
       const blob = await pdfGenerator.genererRapportPersonnalise({
@@ -149,7 +150,8 @@ const Rapports = () => {
         dateFin,
         modules: modulesSelectionnes,
         metriques: metriquesSelectionnees,
-        description: `Rapport personnalisé du ${format(dateDebut, 'dd/MM/yyyy')} au ${format(dateFin, 'dd/MM/yyyy')}`
+        description: `Rapport personnalisé du ${format(dateDebut, 'dd/MM/yyyy')} au ${format(dateFin, 'dd/MM/yyyy')}`,
+        donnees: {} // This will be calculated by the hook
       });
 
       const blob = await pdfGenerator.genererRapportPersonnalise({
