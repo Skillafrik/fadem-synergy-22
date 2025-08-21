@@ -108,9 +108,9 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
   const modifierChambre = (index: number, field: string, value: string | number) => {
     setChambres(prev => prev.map((chambre, i) => {
       if (i === index) {
-        // Handle numeric fields by converting string to number
+        // Handle numeric fields by converting string to number when needed
         if (field === 'superficie' || field === 'prix' || field === 'niveau') {
-          const numericValue = typeof value === 'string' ? Number(value) || 0 : value;
+          const numericValue = typeof value === 'string' ? parseInt(value) || 0 : value;
           return { ...chambre, [field]: numericValue };
         }
         // Handle other fields as strings
