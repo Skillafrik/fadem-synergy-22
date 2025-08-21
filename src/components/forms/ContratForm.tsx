@@ -13,7 +13,7 @@ interface ContratFormProps {
   contrat?: Contrat;
   biens: Bien[];
   locataires: Locataire[];
-  onSubmit: (data: Omit<Contrat, 'id' | 'dateSignature' | 'paiements' | 'factures'>) => void;
+  onSubmit: (data: Omit<Contrat, 'id' | 'dateSignature' | 'paiements' | 'factures' | 'proprietaireId'>) => void;
   onCancel: () => void;
 }
 
@@ -23,14 +23,15 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
   const [formData, setFormData] = useState({
     bienId: contrat?.bienId || '',
     locataireId: contrat?.locataireId || '',
+    type: contrat?.type || 'location' as const,
     dateDebut: contrat?.dateDebut ? contrat.dateDebut.toISOString().split('T')[0] : '',
     dateFin: contrat?.dateFin ? contrat.dateFin.toISOString().split('T')[0] : '',
-    loyerMensuel: contrat?.loyerMensuel || 0,
+    duree: contrat?.duree || 12,
+    montantMensuel: contrat?.montantMensuel || 0,
     caution: contrat?.caution || 0,
-    charges: contrat?.charges || 0,
+    avance: contrat?.avance || 0,
     statut: contrat?.statut || 'actif' as const,
-    conditions: contrat?.conditions || '',
-    observations: contrat?.observations || ''
+    clausesSpeciales: contrat?.clausesSpeciales ? contrat.clausesSpeciales.join('\n') : ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,11 +49,11 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
     if (!formData.bienId) newErrors.bienId = 'Le bien est requis';
     if (!formData.locataireId) newErrors.locataireId = 'Le locataire est requis';
     if (!formData.dateDebut) newErrors.dateDebut = 'La date de début est requise';
-    if (!formData.dateFin) newErrors.dateFin = 'La date de fin est requise';
-    if (formData.loyerMensuel <= 0) newErrors.loyerMensuel = 'Le loyer mensuel doit être supérieur à 0';
+    if (formData.duree <= 0) newErrors.duree = 'La durée doit être supérieure à 0';
+    if (formData.montantMensuel <= 0) newErrors.montantMensuel = 'Le montant mensuel doit être supérieur à 0';
     if (formData.caution < 0) newErrors.caution = 'La caution ne peut pas être négative';
 
-    // Validation des dates
+    // Validation des dates si dateFin est fournie
     if (formData.dateDebut && formData.dateFin) {
       const debut = new Date(formData.dateDebut);
       const fin = new Date(formData.dateFin);
@@ -70,17 +71,20 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
     
     if (!validateForm()) return;
 
+    const selectedBien = biens.find(b => b.id === formData.bienId);
+    
     onSubmit({
       bienId: formData.bienId,
       locataireId: formData.locataireId,
+      type: formData.type,
       dateDebut: new Date(formData.dateDebut),
-      dateFin: new Date(formData.dateFin),
-      loyerMensuel: formData.loyerMensuel,
+      dateFin: formData.dateFin ? new Date(formData.dateFin) : undefined,
+      duree: formData.duree,
+      montantMensuel: formData.montantMensuel,
       caution: formData.caution,
-      charges: formData.charges,
+      avance: formData.avance || undefined,
       statut: formData.statut,
-      conditions: formData.conditions.trim() || undefined,
-      observations: formData.observations.trim() || undefined
+      clausesSpeciales: formData.clausesSpeciales.trim() ? formData.clausesSpeciales.split('\n').filter(c => c.trim()) : undefined
     });
   };
 
@@ -145,6 +149,31 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="type">Type de contrat</Label>
+            <Select value={formData.type} onValueChange={(value) => handleChange('type', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="location">Location</SelectItem>
+                <SelectItem value="vente">Vente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duree">Durée (mois) *</Label>
+            <Input
+              id="duree"
+              type="number"
+              value={formData.duree}
+              onChange={(e) => handleChange('duree', Number(e.target.value))}
+              placeholder="12"
+            />
+            {errors.duree && <p className="text-sm text-destructive">{errors.duree}</p>}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="dateDebut">Date de début *</Label>
             <Input
               id="dateDebut"
@@ -156,7 +185,7 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateFin">Date de fin *</Label>
+            <Label htmlFor="dateFin">Date de fin</Label>
             <Input
               id="dateFin"
               type="date"
@@ -167,15 +196,15 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="loyerMensuel">Loyer mensuel (CFA) *</Label>
+            <Label htmlFor="montantMensuel">Montant mensuel (CFA) *</Label>
             <Input
-              id="loyerMensuel"
+              id="montantMensuel"
               type="number"
-              value={formData.loyerMensuel}
-              onChange={(e) => handleChange('loyerMensuel', Number(e.target.value))}
+              value={formData.montantMensuel}
+              onChange={(e) => handleChange('montantMensuel', Number(e.target.value))}
               placeholder="0"
             />
-            {errors.loyerMensuel && <p className="text-sm text-destructive">{errors.loyerMensuel}</p>}
+            {errors.montantMensuel && <p className="text-sm text-destructive">{errors.montantMensuel}</p>}
           </div>
 
           <div className="space-y-2">
@@ -191,12 +220,12 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="charges">Charges mensuelles (CFA)</Label>
+            <Label htmlFor="avance">Avance (CFA)</Label>
             <Input
-              id="charges"
+              id="avance"
               type="number"
-              value={formData.charges}
-              onChange={(e) => handleChange('charges', Number(e.target.value))}
+              value={formData.avance}
+              onChange={(e) => handleChange('avance', Number(e.target.value))}
               placeholder="0"
             />
           </div>
@@ -218,24 +247,13 @@ export const ContratForm = ({ contrat, biens, locataires, onSubmit, onCancel }: 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="conditions">Conditions particulières</Label>
+          <Label htmlFor="clausesSpeciales">Clauses spéciales</Label>
           <Textarea
-            id="conditions"
-            value={formData.conditions}
-            onChange={(e) => handleChange('conditions', e.target.value)}
-            placeholder="Conditions spécifiques du contrat"
+            id="clausesSpeciales"
+            value={formData.clausesSpeciales}
+            onChange={(e) => handleChange('clausesSpeciales', e.target.value)}
+            placeholder="Une clause par ligne"
             rows={3}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="observations">Observations</Label>
-          <Textarea
-            id="observations"
-            value={formData.observations}
-            onChange={(e) => handleChange('observations', e.target.value)}
-            placeholder="Observations diverses"
-            rows={2}
           />
         </div>
 

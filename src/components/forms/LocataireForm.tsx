@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { Locataire } from '@/types';
 
@@ -22,11 +23,14 @@ export const LocataireForm = ({ locataire, onSubmit, onCancel }: LocataireFormPr
     email: locataire?.email || '',
     adresse: locataire?.adresse || '',
     profession: locataire?.profession || '',
+    entreprise: locataire?.entreprise || '',
     cni: locataire?.cni || '',
-    revenus: locataire?.revenus || 0,
+    passeport: locataire?.passeport || '',
+    dateNaissance: locataire?.dateNaissance ? locataire.dateNaissance.toISOString().split('T')[0] : '',
+    situationMatrimoniale: locataire?.situationMatrimoniale || '',
     personnesACharge: locataire?.personnesACharge || 0,
-    references: locataire?.references || '',
-    commentaires: locataire?.commentaires || ''
+    revenus: locataire?.revenus || 0,
+    documentsSupplementaires: locataire?.documentsSupplementaires ? locataire.documentsSupplementaires.join('\n') : ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,7 +49,10 @@ export const LocataireForm = ({ locataire, onSubmit, onCancel }: LocataireFormPr
     if (!formData.prenom.trim()) newErrors.prenom = 'Le prénom est requis';
     if (!formData.telephone.trim()) newErrors.telephone = 'Le téléphone est requis';
     if (!formData.adresse.trim()) newErrors.adresse = 'L\'adresse est requise';
+    if (!formData.profession.trim()) newErrors.profession = 'La profession est requise';
     if (!formData.cni.trim()) newErrors.cni = 'La CNI est requise';
+    if (!formData.dateNaissance) newErrors.dateNaissance = 'La date de naissance est requise';
+    if (!formData.situationMatrimoniale.trim()) newErrors.situationMatrimoniale = 'La situation matrimoniale est requise';
 
     // Validation du format téléphone
     if (formData.telephone && !/^\d{8,}$/.test(formData.telephone.replace(/\s/g, ''))) {
@@ -72,12 +79,16 @@ export const LocataireForm = ({ locataire, onSubmit, onCancel }: LocataireFormPr
       telephone: formData.telephone.trim(),
       email: formData.email.trim() || undefined,
       adresse: formData.adresse.trim(),
-      profession: formData.profession.trim() || undefined,
+      profession: formData.profession.trim(),
+      entreprise: formData.entreprise.trim() || undefined,
       cni: formData.cni.trim(),
-      revenus: formData.revenus,
+      passeport: formData.passeport.trim() || undefined,
+      dateNaissance: new Date(formData.dateNaissance),
+      situationMatrimoniale: formData.situationMatrimoniale.trim(),
       personnesACharge: formData.personnesACharge,
-      references: formData.references.trim() || undefined,
-      commentaires: formData.commentaires.trim() || undefined
+      revenus: formData.revenus || undefined,
+      documentsSupplementaires: formData.documentsSupplementaires.trim() ? 
+        formData.documentsSupplementaires.split('\n').filter(d => d.trim()) : undefined
     });
   };
 
@@ -151,12 +162,60 @@ export const LocataireForm = ({ locataire, onSubmit, onCancel }: LocataireFormPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="profession">Profession</Label>
+            <Label htmlFor="passeport">Passeport</Label>
+            <Input
+              id="passeport"
+              value={formData.passeport}
+              onChange={(e) => handleChange('passeport', e.target.value)}
+              placeholder="Numéro de passeport"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dateNaissance">Date de naissance *</Label>
+            <Input
+              id="dateNaissance"
+              type="date"
+              value={formData.dateNaissance}
+              onChange={(e) => handleChange('dateNaissance', e.target.value)}
+            />
+            {errors.dateNaissance && <p className="text-sm text-destructive">{errors.dateNaissance}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="situationMatrimoniale">Situation matrimoniale *</Label>
+            <Select value={formData.situationMatrimoniale} onValueChange={(value) => handleChange('situationMatrimoniale', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="celibataire">Célibataire</SelectItem>
+                <SelectItem value="marie">Marié(e)</SelectItem>
+                <SelectItem value="divorce">Divorcé(e)</SelectItem>
+                <SelectItem value="veuf">Veuf(ve)</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.situationMatrimoniale && <p className="text-sm text-destructive">{errors.situationMatrimoniale}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="profession">Profession *</Label>
             <Input
               id="profession"
               value={formData.profession}
               onChange={(e) => handleChange('profession', e.target.value)}
               placeholder="Profession du locataire"
+            />
+            {errors.profession && <p className="text-sm text-destructive">{errors.profession}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="entreprise">Entreprise</Label>
+            <Input
+              id="entreprise"
+              value={formData.entreprise}
+              onChange={(e) => handleChange('entreprise', e.target.value)}
+              placeholder="Nom de l'entreprise"
             />
           </div>
 
@@ -196,23 +255,12 @@ export const LocataireForm = ({ locataire, onSubmit, onCancel }: LocataireFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="references">Références</Label>
+          <Label htmlFor="documentsSupplementaires">Documents supplémentaires</Label>
           <Textarea
-            id="references"
-            value={formData.references}
-            onChange={(e) => handleChange('references', e.target.value)}
-            placeholder="Références professionnelles ou personnelles"
-            rows={2}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="commentaires">Commentaires</Label>
-          <Textarea
-            id="commentaires"
-            value={formData.commentaires}
-            onChange={(e) => handleChange('commentaires', e.target.value)}
-            placeholder="Commentaires additionnels"
+            id="documentsSupplementaires"
+            value={formData.documentsSupplementaires}
+            onChange={(e) => handleChange('documentsSupplementaires', e.target.value)}
+            placeholder="Un document par ligne"
             rows={2}
           />
         </div>
