@@ -105,12 +105,13 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     }
   };
 
-  const modifierChambre = (index: number, field: string, value: string) => {
+  const modifierChambre = (index: number, field: string, value: string | number) => {
     setChambres(prev => prev.map((chambre, i) => {
       if (i === index) {
         // Gestion spéciale pour les champs numériques
         if (field === 'superficie' || field === 'prix' || field === 'niveau') {
-          return { ...chambre, [field]: Number(value) || 0 };
+          const numericValue = typeof value === 'string' ? Number(value) || 0 : value;
+          return { ...chambre, [field]: numericValue };
         }
         return { ...chambre, [field]: value };
       }
@@ -317,7 +318,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <label className="block text-xs font-medium mb-1">Superficie (m²)</label>
                         <Input
                           type="number"
-                          value={chambre.superficie.toString()}
+                          value={chambre.superficie}
                           onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
                           size="sm"
                         />
@@ -327,7 +328,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <label className="block text-xs font-medium mb-1">Loyer (CFA)</label>
                         <Input
                           type="number"
-                          value={chambre.prix.toString()}
+                          value={chambre.prix}
                           onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
                           size="sm"
                         />
@@ -338,7 +339,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <Input
                           type="number"
                           min="1"
-                          value={chambre.niveau.toString()}
+                          value={chambre.niveau}
                           onChange={(e) => modifierChambre(index, 'niveau', e.target.value)}
                           size="sm"
                         />
