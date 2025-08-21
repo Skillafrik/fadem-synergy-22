@@ -103,10 +103,18 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     }
   };
 
-  const modifierChambre = (index: number, field: string, value: any) => {
-    setChambres(prev => prev.map((chambre, i) => 
-      i === index ? { ...chambre, [field]: value } : chambre
-    ));
+  const modifierChambre = (index: number, field: keyof Omit<Chambre, 'statut' | 'niveau'>, value: any) => {
+    setChambres(prev => prev.map((chambre, i) => {
+      if (i === index) {
+        // Handle type conversion for numeric fields
+        if (field === 'superficie' || field === 'prix') {
+          const numericValue = typeof value === 'string' ? (Number(value) || 0) : value;
+          return { ...chambre, [field]: numericValue };
+        }
+        return { ...chambre, [field]: value };
+      }
+      return chambre;
+    }));
   };
 
   const ajouterEquipement = () => {
@@ -331,7 +339,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                       <Input
                         type="number"
                         value={chambre.superficie}
-                        onChange={(e) => modifierChambre(index, 'superficie', Number(e.target.value) || 0)}
+                        onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
                         size="sm"
                       />
                     </div>
@@ -340,7 +348,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                       <Input
                         type="number"
                         value={chambre.prix}
-                        onChange={(e) => modifierChambre(index, 'prix', Number(e.target.value) || 0)}
+                        onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
                         size="sm"
                       />
                     </div>
