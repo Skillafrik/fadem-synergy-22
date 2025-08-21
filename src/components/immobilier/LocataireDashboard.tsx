@@ -43,27 +43,17 @@ export const LocataireDashboard = ({
     return `${nom.charAt(0)}${prenom.charAt(0)}`.toUpperCase();
   };
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      'a_jour': 'text-success',
-      'retard_leger': 'text-warning',
-      'retard_important': 'text-destructive',
-      'impaye': 'text-destructive'
-    };
-    return colors[status as keyof typeof colors] || 'text-muted-foreground';
-  };
-
   return (
     <div className="space-y-6">
       {/* Header avec statistiques */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-fadem-black">Locataires</h1>
+          <h1 className="text-2xl font-bold text-foreground">Locataires</h1>
           <p className="text-muted-foreground">
             {locataires.length} locataire{locataires.length > 1 ? 's' : ''} au total
           </p>
         </div>
-        <Button onClick={onAddLocataire} className="bg-fadem-red hover:bg-fadem-red-dark text-white">
+        <Button onClick={onAddLocataire} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Plus size={20} className="mr-2" />
           Nouveau Locataire
         </Button>
@@ -82,7 +72,7 @@ export const LocataireDashboard = ({
         
         <ModernCard variant="gradient" size="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-warning">
+            <div className="text-2xl font-bold text-yellow-600">
               {locataires.filter(l => l.statusPaiement === 'retard_leger').length}
             </div>
             <div className="text-sm text-muted-foreground">Retard léger</div>
@@ -100,7 +90,7 @@ export const LocataireDashboard = ({
         
         <ModernCard variant="gradient" size="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-fadem-red">
+            <div className="text-2xl font-bold text-primary">
               {alertes.filter(a => !a.resolue).length}
             </div>
             <div className="text-sm text-muted-foreground">Alertes</div>
@@ -151,7 +141,7 @@ export const LocataireDashboard = ({
           <ModernCard 
             key={locataire.id}
             variant="bordered"
-            className="cursor-pointer hover:border-primary/40 transition-colors"
+            className="transition-colors"
             onClick={() => onViewLocataire(locataire)}
           >
             <div className="space-y-4">
@@ -164,7 +154,7 @@ export const LocataireDashboard = ({
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold text-fadem-black">
+                    <h3 className="font-semibold text-foreground">
                       {locataire.nom} {locataire.prenom}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -211,7 +201,7 @@ export const LocataireDashboard = ({
                 <div className="text-xs text-muted-foreground">
                   Prochain loyer: {locataire.dateProchainLoyer.toLocaleDateString()}
                 </div>
-                <div className="text-sm font-medium text-fadem-black">
+                <div className="text-sm font-medium text-foreground">
                   {locataire.montantProchainLoyer.toLocaleString()} CFA
                 </div>
               </div>

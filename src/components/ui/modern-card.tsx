@@ -9,6 +9,7 @@ interface ModernCardProps {
   className?: string;
   variant?: 'default' | 'gradient' | 'bordered' | 'elevated';
   size?: 'sm' | 'md' | 'lg';
+  onClick?: () => void;
 }
 
 export const ModernCard = ({ 
@@ -16,11 +17,12 @@ export const ModernCard = ({
   children, 
   className, 
   variant = 'default',
-  size = 'md' 
+  size = 'md',
+  onClick
 }: ModernCardProps) => {
   const variants = {
     default: 'bg-card border-card-border',
-    gradient: 'bg-gradient-surface border-0',
+    gradient: 'bg-gradient-to-br from-card to-muted/20 border-0',
     bordered: 'bg-card border-2 border-primary/20',
     elevated: 'bg-card shadow-lg border-0'
   };
@@ -32,14 +34,18 @@ export const ModernCard = ({
   };
 
   return (
-    <Card className={cn(
-      'transition-all duration-200 hover:shadow-md',
-      variants[variant],
-      className
-    )}>
+    <Card 
+      className={cn(
+        'transition-all duration-200 hover:shadow-md',
+        variants[variant],
+        onClick && 'cursor-pointer hover:border-primary/40',
+        className
+      )}
+      onClick={onClick}
+    >
       {title && (
         <CardHeader className={cn('pb-3', size === 'sm' && 'pb-2')}>
-          <CardTitle className="text-fadem-black font-semibold">
+          <CardTitle className="text-foreground font-semibold">
             {title}
           </CardTitle>
         </CardHeader>

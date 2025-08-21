@@ -35,14 +35,77 @@ export interface HistoriqueLogement {
   montantLoyer: number;
 }
 
-export interface ProprietaireAmeliore extends Omit<import('@/types').Proprietaire, 'biensConfies'> {
+// Base interfaces from existing types
+interface BaseProprietaire {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email?: string;
+  adresse: string;
+  dateCreation: Date;
+}
+
+interface BaseBien {
+  id: string;
+  proprietaireId: string;
+  type: string;
+  adresse: string;
+  quartier: string;
+  superficie: number;
+  nbrChambres: number;
+  prixFadem: number;
+  commission: number;
+  statut: string;
+  dateEnregistrement: Date;
+  contratActuel?: string;
+  description?: string;
+}
+
+interface BaseLocataire {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email?: string;
+  adresse: string;
+  profession: string;
+  entreprise?: string;
+  cni: string;
+  passeport?: string;
+  dateNaissance: Date;
+  situationMatrimoniale: string;
+  personnesACharge: number;
+  revenus?: number;
+  documentsSupplementaires?: string[];
+  dateCreation: Date;
+}
+
+interface BaseContrat {
+  id: string;
+  proprietaireId: string;
+  bienId: string;
+  locataireId: string;
+  type: 'location' | 'vente';
+  dateDebut: Date;
+  dateFin?: Date;
+  duree: number;
+  montantMensuel: number;
+  caution: number;
+  avance?: number;
+  statut: 'actif' | 'suspendu' | 'resilié' | 'expire';
+  clausesSpeciales?: string[];
+  dateSignature: Date;
+}
+
+export interface ProprietaireAmeliore extends BaseProprietaire {
   biensConfies: BienAmeliore[];
   contactPreference: 'telephone' | 'email' | 'whatsapp';
   comptesBancaires?: string[];
   notesPrivees?: string;
 }
 
-export interface BienAmeliore extends Omit<import('@/types').Bien, 'chambres' | 'photos'> {
+export interface BienAmeliore extends BaseBien {
   chambres: Chambre[];
   etages: number;
   ascenseur: boolean;
@@ -62,9 +125,10 @@ export interface BienAmeliore extends Omit<import('@/types').Bien, 'chambres' | 
   historiqueOccupation: HistoriqueLogement[];
 }
 
-export interface LocataireAmeliore extends Omit<import('@/types').Locataire, 'contratsActifs'> {
+export interface LocataireAmeliore extends BaseLocataire {
   bienActuel?: string; // ID du bien où il habite
   chambreActuelle?: string; // Numéro de la chambre
+  contratsActifs: string[]; // IDs des contrats actifs
   garants: Garant[];
   documents: DocumentLocataire[];
   historiqueLogements: HistoriqueLogement[];
@@ -77,7 +141,7 @@ export interface LocataireAmeliore extends Omit<import('@/types').Locataire, 'co
   languePreferee: 'francais' | 'anglais' | 'local';
 }
 
-export interface ContratAmeliore extends Omit<import('@/types').Contrat, 'paiements' | 'factures'> {
+export interface ContratAmeliore extends BaseContrat {
   chambreNumero?: string; // Chambre spécifique dans le bien
   clausesPersonnalisees: string[];
   inventaire: {
@@ -97,7 +161,18 @@ export interface ContratAmeliore extends Omit<import('@/types').Contrat, 'paieme
   motifResiliation?: string;
 }
 
-export interface PaiementAmeliore extends import('@/types').Paiement {
+interface BasePaiement {
+  id: string;
+  contratId: string;
+  montant: number;
+  datePaiement: Date;
+  datePrevue: Date;
+  statut: 'paye' | 'en_retard' | 'partiel';
+  methode: 'espece' | 'virement' | 'cheque' | 'mobile_money';
+  reference?: string;
+}
+
+export interface PaiementAmeliore extends BasePaiement {
   chambreNumero?: string;
   fraisSupplementaires?: {
     electricite?: number;
