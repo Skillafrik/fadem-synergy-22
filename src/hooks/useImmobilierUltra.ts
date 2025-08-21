@@ -248,12 +248,20 @@ export function useImmobilierUltra() {
         datePaiement: paiementData.datePaiement
       };
 
-      // Mettre à jour le solde du locataire
+      // Mettre à jour le solde du locataire avec typage correct
       const locatairesMAJ = prev.locataires.map(locataire => {
         if (locataire.id === echeance.locataireId) {
           const nouveauSolde = locataire.soldeCompte + paiementData.montant;
-          const nouveauStatus = nouveauSolde >= 0 ? 'a_jour' : 
-                               nouveauSolde > -echeance.montant ? 'retard_leger' : 'retard_important';
+          
+          // Utilisation de typage explicite pour éviter l'erreur TypeScript
+          let nouveauStatus: Locataire['statusPaiement'];
+          if (nouveauSolde >= 0) {
+            nouveauStatus = 'a_jour';
+          } else if (nouveauSolde > -echeance.montant) {
+            nouveauStatus = 'retard_leger';
+          } else {
+            nouveauStatus = 'retard_important';
+          }
           
           return {
             ...locataire,
