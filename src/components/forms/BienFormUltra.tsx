@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Home, MapPin, Camera, Plus, Save, X, Building } from 'lucide-react';
 import { UltraCard } from '@/components/ui/ultra-card';
@@ -418,3 +419,4 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
     </div>
   );
 };
+
