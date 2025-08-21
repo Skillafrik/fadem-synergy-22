@@ -318,7 +318,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <label className="block text-xs font-medium mb-1">Superficie (m²)</label>
                         <Input
                           type="number"
-                          value={chambre.superficie}
+                          value={chambre.superficie.toString()}
                           onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
                           size="sm"
                         />
@@ -328,7 +328,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <label className="block text-xs font-medium mb-1">Loyer (CFA)</label>
                         <Input
                           type="number"
-                          value={chambre.prix}
+                          value={chambre.prix.toString()}
                           onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
                           size="sm"
                         />
@@ -339,7 +339,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <Input
                           type="number"
                           min="1"
-                          value={chambre.niveau}
+                          value={chambre.niveau.toString()}
                           onChange={(e) => modifierChambre(index, 'niveau', e.target.value)}
                           size="sm"
                         />
