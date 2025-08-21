@@ -151,7 +151,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
             <Building className="w-6 h-6 text-primary" />
             Nouveau Bien Immobilier
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose}>
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -281,7 +281,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Chambres ({chambres.length})</h3>
-              <Button type="button" onClick={ajouterChambre} size="sm">
+              <Button type="button" onClick={ajouterChambre}>
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter une chambre
               </Button>
@@ -294,8 +294,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                     <Button
                       type="button"
                       variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700 h-8 w-8 p-0"
                       onClick={() => supprimerChambre(index)}
                     >
                       <X className="w-4 h-4" />
@@ -311,7 +310,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                         <Input
                           value={chambre.numero}
                           onChange={(e) => modifierChambre(index, 'numero', e.target.value)}
-                          size="sm"
+                          className="h-8"
                         />
                       </div>
 
@@ -321,7 +320,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                           type="number"
                           value={chambre.superficie.toString()}
                           onChange={(e) => modifierChambre(index, 'superficie', e.target.value)}
-                          size="sm"
+                          className="h-8"
                         />
                       </div>
 
@@ -331,7 +330,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                           type="number"
                           value={chambre.prix.toString()}
                           onChange={(e) => modifierChambre(index, 'prix', e.target.value)}
-                          size="sm"
+                          className="h-8"
                         />
                       </div>
 
@@ -342,7 +341,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                           min="1"
                           value={chambre.niveau.toString()}
                           onChange={(e) => modifierChambre(index, 'niveau', e.target.value)}
-                          size="sm"
+                          className="h-8"
                         />
                       </div>
                     </div>
@@ -352,7 +351,7 @@ export const BienFormUltra = ({ onClose, onSuccess }: BienFormUltraProps) => {
                       <select
                         value={chambre.statut}
                         onChange={(e) => modifierChambre(index, 'statut', e.target.value)}
-                        className="w-full p-2 text-sm border rounded bg-background"
+                        className="w-full p-2 text-sm border rounded bg-background h-8"
                       >
                         <option value="libre">Libre</option>
                         <option value="occupee">Occupée</option>
