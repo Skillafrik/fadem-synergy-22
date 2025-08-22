@@ -30,7 +30,9 @@ export const LocataireFormUltra = ({ onClose, onSuccess }: LocataireFormUltraPro
     dateNaissance: '',
     situationMatrimoniale: 'celibataire' as 'celibataire' | 'marie' | 'divorce' | 'veuf',
     personnesACharge: 0,
-    revenus: 0
+    revenus: 0,
+    contactPreference: 'telephone' as 'telephone' | 'email' | 'whatsapp' | 'visite',
+    languePreferee: 'francais' as 'francais' | 'anglais' | 'local'
   });
 
   const [loading, setLoading] = useState(false);
@@ -261,6 +263,40 @@ export const LocataireFormUltra = ({ onClose, onSuccess }: LocataireFormUltraPro
                   onChange={(e) => handleInputChange('passeport', e.target.value)}
                   placeholder="Numéro passeport"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Préférences de contact */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Préférences de contact</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Mode de contact préféré</label>
+                <select
+                  value={formData.contactPreference}
+                  onChange={(e) => handleInputChange('contactPreference', e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="telephone">Téléphone</option>
+                  <option value="email">Email</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="visite">Visite directe</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Langue préférée</label>
+                <select
+                  value={formData.languePreferee}
+                  onChange={(e) => handleInputChange('languePreferee', e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="francais">Français</option>
+                  <option value="anglais">Anglais</option>
+                  <option value="local">Langue locale</option>
+                </select>
               </div>
             </div>
           </div>
