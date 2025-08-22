@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building, Plus, Edit, X } from 'lucide-react';
+import { Building, Plus, Edit, X, AlertTriangle, CheckCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import {
   Tabs,
@@ -17,7 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { useToast } from '@/hooks/use-toast';
 import { ProprietaireForm } from '@/components/forms/ProprietaireForm';
 import { BienForm } from '@/components/forms/BienForm';
 import { LocataireForm } from '@/components/forms/LocataireForm';
@@ -26,6 +25,7 @@ import { useImmobilier } from '@/hooks/useImmobilier';
 import { Proprietaire, Bien, Locataire, Contrat } from '@/types';
 
 export default function Immobilier() {
+  const { toast } = useToast();
   const { 
     proprietaires, 
     biens, 
@@ -58,89 +58,263 @@ export default function Immobilier() {
   const [showContratForm, setShowContratForm] = useState(false);
   const [contratAModifier, setContratAModifier] = useState<Contrat | null>(null);
 
+  // Debug: Afficher les données en console
+  useEffect(() => {
+    console.log('[Immobilier] Données actuelles:', {
+      proprietaires: proprietaires.length,
+      biens: biens.length,
+      locataires: locataires.length,
+      contrats: contrats.length
+    });
+  }, [proprietaires, biens, locataires, contrats]);
+
   // Handlers pour les propriétaires
-  const handleAjouterProprietaire = (proprietaire: Omit<Proprietaire, 'id' | 'dateCreation' | 'biensConfies' | 'commissionsRecues'>) => {
-    ajouterProprietaire(proprietaire);
-    setShowProprietaireForm(false);
+  const handleAjouterProprietaire = async (proprietaire: Omit<Proprietaire, 'id' | 'dateCreation' | 'biensConfies' | 'commissionsRecues'>) => {
+    try {
+      console.log('[Immobilier] Tentative ajout propriétaire:', proprietaire);
+      const nouveau = ajouterProprietaire(proprietaire);
+      console.log('[Immobilier] Propriétaire ajouté:', nouveau);
+      
+      toast({
+        title: "Succès",
+        description: `Propriétaire ${proprietaire.nom} ${proprietaire.prenom} ajouté avec succès`,
+      });
+      
+      setShowProprietaireForm(false);
+    } catch (error: any) {
+      console.error('[Immobilier] Erreur ajout propriétaire:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter le propriétaire",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleModifierProprietaire = (id: string, updates: Partial<Proprietaire>) => {
-    modifierProprietaire(id, updates);
-    setProprietaireAModifier(null);
+    try {
+      modifierProprietaire(id, updates);
+      toast({
+        title: "Succès",
+        description: "Propriétaire modifié avec succès",
+      });
+      setProprietaireAModifier(null);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier le propriétaire",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSupprimerProprietaire = (id: string) => {
     try {
       supprimerProprietaire(id);
+      toast({
+        title: "Succès",
+        description: "Propriétaire supprimé avec succès",
+      });
     } catch (error: any) {
-      alert(error.message);
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
   // Handlers pour les biens
-  const handleAjouterBien = (bien: Omit<Bien, 'id' | 'dateEnregistrement' | 'statut' | 'commission'>) => {
-    ajouterBien(bien);
-    setShowBienForm(false);
+  const handleAjouterBien = async (bien: Omit<Bien, 'id' | 'dateEnregistrement' | 'statut' | 'commission'>) => {
+    try {
+      console.log('[Immobilier] Tentative ajout bien:', bien);
+      const nouveau = ajouterBien(bien);
+      console.log('[Immobilier] Bien ajouté:', nouveau);
+      
+      toast({
+        title: "Succès",
+        description: `Bien ${bien.type} ajouté avec succès`,
+      });
+      
+      setShowBienForm(false);
+    } catch (error: any) {
+      console.error('[Immobilier] Erreur ajout bien:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter le bien",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleModifierBien = (id: string, updates: Partial<Bien>) => {
-    modifierBien(id, updates);
-    setBienAModifier(null);
+    try {
+      modifierBien(id, updates);
+      toast({
+        title: "Succès",
+        description: "Bien modifié avec succès",
+      });
+      setBienAModifier(null);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier le bien",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSupprimerBien = (id: string) => {
     try {
       supprimerBien(id);
+      toast({
+        title: "Succès",
+        description: "Bien supprimé avec succès",
+      });
     } catch (error: any) {
-      alert(error.message);
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
   // Handlers pour les locataires
-  const handleAjouterLocataire = (locataire: Omit<Locataire, 'id' | 'dateCreation' | 'contratsActifs'>) => {
-    ajouterLocataire(locataire);
-    setShowLocataireForm(false);
+  const handleAjouterLocataire = async (locataire: Omit<Locataire, 'id' | 'dateCreation' | 'contratsActifs'>) => {
+    try {
+      console.log('[Immobilier] Tentative ajout locataire:', locataire);
+      const nouveau = ajouterLocataire(locataire);
+      console.log('[Immobilier] Locataire ajouté:', nouveau);
+      
+      toast({
+        title: "Succès",
+        description: `Locataire ${locataire.nom} ${locataire.prenom} ajouté avec succès`,
+      });
+      
+      setShowLocataireForm(false);
+    } catch (error: any) {
+      console.error('[Immobilier] Erreur ajout locataire:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter le locataire",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleModifierLocataire = (id: string, updates: Partial<Locataire>) => {
-    modifierLocataire(id, updates);
-    setLocataireAModifier(null);
+    try {
+      modifierLocataire(id, updates);
+      toast({
+        title: "Succès",
+        description: "Locataire modifié avec succès",
+      });
+      setLocataireAModifier(null);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier le locataire",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSupprimerLocataire = (id: string) => {
     try {
       supprimerLocataire(id);
+      toast({
+        title: "Succès",
+        description: "Locataire supprimé avec succès",
+      });
     } catch (error: any) {
-      alert(error.message);
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
   // Handlers pour les contrats
-  const handleCreerContrat = (contrat: Omit<Contrat, 'id' | 'dateSignature' | 'paiements' | 'factures' | 'proprietaireId'>) => {
-    creerContrat({
-      ...contrat,
-      proprietaireId: biens.find(b => b.id === contrat.bienId)?.proprietaireId || 'unknown'
-    });
-    setShowContratForm(false);
+  const handleCreerContrat = async (contrat: Omit<Contrat, 'id' | 'dateSignature' | 'paiements' | 'factures' | 'proprietaireId'>) => {
+    try {
+      console.log('[Immobilier] Tentative création contrat:', contrat);
+      const nouveau = creerContrat({
+        ...contrat,
+        proprietaireId: biens.find(b => b.id === contrat.bienId)?.proprietaireId || 'unknown'
+      });
+      console.log('[Immobilier] Contrat créé:', nouveau);
+      
+      toast({
+        title: "Succès",
+        description: "Contrat créé avec succès",
+      });
+      
+      setShowContratForm(false);
+    } catch (error: any) {
+      console.error('[Immobilier] Erreur création contrat:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de créer le contrat",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleModifierContrat = (id: string, updates: Partial<Contrat>) => {
-    modifierContrat(id, updates);
-    setContratAModifier(null);
+    try {
+      modifierContrat(id, updates);
+      toast({
+        title: "Succès",
+        description: "Contrat modifié avec succès",
+      });
+      setContratAModifier(null);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier le contrat",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
     <div className="container mx-auto py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Gestion Immobilière FADEM</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="w-6 h-6" />
+            Gestion Immobilière FADEM
+          </CardTitle>
           <CardDescription>
             Gérez vos propriétaires, biens, locataires et contrats de location.
           </CardDescription>
+          
+          {/* Indicateurs de debug */}
+          <div className="flex gap-2 mt-2">
+            <Badge variant={proprietaires.length > 0 ? "default" : "secondary"}>
+              <CheckCircle className="w-3 h-3 mr-1" />
+              {proprietaires.length} Propriétaires
+            </Badge>
+            <Badge variant={biens.length > 0 ? "default" : "secondary"}>
+              <CheckCircle className="w-3 h-3 mr-1" />
+              {biens.length} Biens
+            </Badge>
+            <Badge variant={locataires.length > 0 ? "default" : "secondary"}>
+              <CheckCircle className="w-3 h-3 mr-1" />
+              {locataires.length} Locataires
+            </Badge>
+            <Badge variant={contrats.length > 0 ? "default" : "secondary"}>
+              <CheckCircle className="w-3 h-3 mr-1" />
+              {contrats.length} Contrats
+            </Badge>
+          </div>
         </CardHeader>
+        
         <CardContent>
           <Tabs defaultValue="proprietaires" className="space-y-4">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="proprietaires">Propriétaires</TabsTrigger>
               <TabsTrigger value="biens">Biens</TabsTrigger>
               <TabsTrigger value="locataires">Locataires</TabsTrigger>
@@ -383,123 +557,123 @@ export default function Immobilier() {
               </Card>
             </TabsContent>
 
-        <TabsContent value="contrats" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-fadem-black">Contrats de Location</h2>
-            <Button 
-              onClick={() => setShowContratForm(true)}
-              className="bg-fadem-red hover:bg-fadem-red-dark text-white"
-            >
-              <Plus size={20} className="mr-2" />
-              Nouveau Contrat
-            </Button>
-          </div>
-
-          <Card>
-            <div className="p-6">
-              <div className="space-y-4">
-                {contrats.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Building size={48} className="mx-auto mb-4 opacity-50" />
-                    <p>Aucun contrat enregistré</p>
-                    <p className="text-sm">Créez votre premier contrat de location</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-2">Bien</th>
-                          <th className="text-left p-2">Locataire</th>
-                          <th className="text-left p-2">Type</th>
-                          <th className="text-left p-2">Montant</th>
-                          <th className="text-left p-2">Début</th>
-                          <th className="text-left p-2">Fin</th>
-                          <th className="text-left p-2">Statut</th>
-                          <th className="text-left p-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contrats.map((contrat) => {
-                          const bien = biens.find(b => b.id === contrat.bienId);
-                          const locataire = locataires.find(l => l.id === contrat.locataireId);
-                          
-                          return (
-                            <tr key={contrat.id} className="border-b hover:bg-gray-50">
-                              <td className="p-2">
-                                <div>
-                                  <p className="font-medium">{bien?.type}</p>
-                                  <p className="text-sm text-muted-foreground">{bien?.quartier}</p>
-                                </div>
-                              </td>
-                              <td className="p-2">
-                                <div>
-                                  <p className="font-medium">{locataire?.nom} {locataire?.prenom}</p>
-                                  <p className="text-sm text-muted-foreground">{locataire?.telephone}</p>
-                                </div>
-                              </td>
-                              <td className="p-2">
-                                <Badge variant={contrat.type === 'location' ? 'default' : 'secondary'}>
-                                  {contrat.type === 'location' ? 'Location' : 'Vente'}
-                                </Badge>
-                              </td>
-                              <td className="p-2">
-                                <p className="font-medium">{contrat.montantMensuel.toLocaleString()} CFA</p>
-                                <p className="text-sm text-muted-foreground">
-                                  Caution: {contrat.caution.toLocaleString()} CFA
-                                </p>
-                              </td>
-                              <td className="p-2">
-                                {contrat.dateDebut.toLocaleDateString()}
-                              </td>
-                              <td className="p-2">
-                                {contrat.dateFin ? contrat.dateFin.toLocaleDateString() : 'Non définie'}
-                              </td>
-                              <td className="p-2">
-                                <Badge 
-                                  variant={
-                                    contrat.statut === 'actif' ? 'default' :
-                                    contrat.statut === 'suspendu' ? 'secondary' :
-                                    contrat.statut === 'expire' ? 'destructive' : 'outline'
-                                  }
-                                >
-                                  {contrat.statut}
-                                </Badge>
-                              </td>
-                              <td className="p-2">
-                                <div className="flex space-x-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setContratAModifier(contrat);
-                                      setShowContratForm(true);
-                                    }}
-                                  >
-                                    <Edit size={16} />
-                                  </Button>
-                                  {contrat.statut === 'actif' && (
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() => resilierContrat(contrat.id)}
-                                    >
-                                      <X size={16} />
-                                    </Button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+            <TabsContent value="contrats" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-semibold text-fadem-black">Contrats de Location</h2>
+                <Button 
+                  onClick={() => setShowContratForm(true)}
+                  className="bg-fadem-red hover:bg-fadem-red-dark text-white"
+                >
+                  <Plus size={20} className="mr-2" />
+                  Nouveau Contrat
+                </Button>
               </div>
-            </div>
-          </Card>
-        </TabsContent>
+
+              <Card>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {contrats.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Building size={48} className="mx-auto mb-4 opacity-50" />
+                        <p>Aucun contrat enregistré</p>
+                        <p className="text-sm">Créez votre premier contrat de location</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left p-2">Bien</th>
+                              <th className="text-left p-2">Locataire</th>
+                              <th className="text-left p-2">Type</th>
+                              <th className="text-left p-2">Montant</th>
+                              <th className="text-left p-2">Début</th>
+                              <th className="text-left p-2">Fin</th>
+                              <th className="text-left p-2">Statut</th>
+                              <th className="text-left p-2">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {contrats.map((contrat) => {
+                              const bien = biens.find(b => b.id === contrat.bienId);
+                              const locataire = locataires.find(l => l.id === contrat.locataireId);
+                              
+                              return (
+                                <tr key={contrat.id} className="border-b hover:bg-gray-50">
+                                  <td className="p-2">
+                                    <div>
+                                      <p className="font-medium">{bien?.type}</p>
+                                      <p className="text-sm text-muted-foreground">{bien?.quartier}</p>
+                                    </div>
+                                  </td>
+                                  <td className="p-2">
+                                    <div>
+                                      <p className="font-medium">{locataire?.nom} {locataire?.prenom}</p>
+                                      <p className="text-sm text-muted-foreground">{locataire?.telephone}</p>
+                                    </div>
+                                  </td>
+                                  <td className="p-2">
+                                    <Badge variant={contrat.type === 'location' ? 'default' : 'secondary'}>
+                                      {contrat.type === 'location' ? 'Location' : 'Vente'}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-2">
+                                    <p className="font-medium">{contrat.montantMensuel.toLocaleString()} CFA</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Caution: {contrat.caution.toLocaleString()} CFA
+                                    </p>
+                                  </td>
+                                  <td className="p-2">
+                                    {contrat.dateDebut.toLocaleDateString()}
+                                  </td>
+                                  <td className="p-2">
+                                    {contrat.dateFin ? contrat.dateFin.toLocaleDateString() : 'Non définie'}
+                                  </td>
+                                  <td className="p-2">
+                                    <Badge 
+                                      variant={
+                                        contrat.statut === 'actif' ? 'default' :
+                                        contrat.statut === 'suspendu' ? 'secondary' :
+                                        contrat.statut === 'expire' ? 'destructive' : 'outline'
+                                      }
+                                    >
+                                      {contrat.statut}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-2">
+                                    <div className="flex space-x-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setContratAModifier(contrat);
+                                          setShowContratForm(true);
+                                        }}
+                                      >
+                                        <Edit size={16} />
+                                      </Button>
+                                      {contrat.statut === 'actif' && (
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => resilierContrat(contrat.id)}
+                                        >
+                                          <X size={16} />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
